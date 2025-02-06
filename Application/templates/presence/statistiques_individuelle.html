@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% load static %}
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title></title>
+        <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+        <link href="{% static 'notes/css/styles.css' %}" rel="stylesheet" />
+        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <style>
+            @media screen and (max-width:576px) {
+                .container {
+                    width: 100%;
+                } 
+    
+                .statistiques_Globales{
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    width: 100%;
+                    margin: auto;
+                
+                }
+            }
+    
+            .date{
+                display: flex;
+            }
+    
+            .date{
+                display: flex;
+                width: 40%;
+            }
+            .statistiques_Globales{
+                display: flex;
+    
+                justify-content: center;
+                width: 100%;
+                margin: auto;
+            
+            }
+            .carres{
+                margin: 5px;
+                box-shadow: 5px 5px 5px rgb(43, 42, 42);
+            }
+            .carres h2{
+                color: rgb(255, 251, 0);
+                font-weight: 700;
+                text-align: center;
+            }
+            .carres h1{
+                color: white;
+                font-weight: 600;
+                text-align: center;
+               
+            }
+            @media screen and (min-width:576px) {
+                
+           
+            .date{
+                display: flex;
+                width: 40%;
+            }
+            .statistiques_Globales{
+                display: flex;
+                justify-content: center;
+                width: 100%;
+                margin: auto;
+            
+            }
+            .carres{
+                margin: 5px;
+                box-shadow: 5px 5px 5px rgb(43, 42, 42);
+            }
+            .carres h2{
+                color: rgb(255, 251, 0);
+                font-weight: 700;
+                text-align: center;
+            }
+            .carres h1{
+                color: white;
+                font-weight: 600;
+                text-align: center;
+               
+            }
+        }
+        </style>
+    {% include "_partials/header_link.html" %}
+    </head>
+    <body class="sb-nav-fixed">
+        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+            <!-- Navbar Brand-->
+            <a class="navbar-brand ps-3" href="#">Présence</a>
+            <!-- Sidebar Toggle-->
+            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
+        </nav>
+        <div id="layoutSidenav">
+            <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <div class="sb-sidenav-menu-heading">{{ matiere.libele }}</div>
+                            <a class="nav-link" href="{% url 'presence' matiere.slug %}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-pie"></i></div>
+                                Présence
+                            </a>   
+                            <a class="nav-link" href="{% url 'statistiques' matiere.slug %}">
+                                <div class="sb-nav-link-icon"><i class="fas fa-chart-pie"></i></div>
+                                Statistiques
+                            </a>
+
+                            <a class="nav-link text-white" href="{% url 'statistiques' matiere.slug %}">
+                                <div class="sb-nav-link-icon text-white"><i class="fas fa-chart-pie"></i></div>
+                                Statistiques Individuelles
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+            <div id="layoutSidenav_content">
+                <main>
+                    <section class="page-title-section overlay" data-background="{% static 'images/backgrounds/page-title.jpg' %}">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <ul class="list-inline custom-breadcrumb mb-2">
+                                        <li class="list-inline-item"><a class="h2 text-primary font-secondary" href="{% url 'index'%}">Accueil</a></li>
+                                        <li class="list-inline-item text-white h3 font-secondary nasted">Présence et Statistiques Individuelle de {{Etudiant.user.last_name}}  {{Etudiant.user.first_name}}</li>
+                                    </ul>
+                                    <p class="text-lighten mb-0">Ici vous pouvez modifier les status de présences de vos Etudiants et visualiser les statistiques sur les niveaux d'évolutions, leur taux d'absence et bien d'autres</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="container-fluid px-4">
+                        <div class="container d-flex flex-wrap presence" style="padding: 2%; width:90%; display:block">
+                            <div class="row" style="width:100%;">
+                                
+                                <div class="statistiques_Globales container col-sm-6">
+                                    <div class="carres col-sm bg">
+                                        <canvas id="overallChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="statistiques_Globales container col-sm-6">
+                                    <div class="carres col-sm bg">
+                                        <canvas id="apreciation"></canvas>
+                                    </div>
+                                </div>
+                                {% comment %} <div class="statistiques_Globales container col-6">
+                                    <div class="carres col-sm bg">
+                                        <canvas id="genderChart"></canvas>
+                                    </div>
+                                </div> {% endcomment %}
+                                            
+                             </div>    
+                            
+                            
+                            
+                        </div>
+                        <div class="row">
+                               
+                               
+                            <!-- Les  Jour que l'Etudiant s'est absenté -->
+                                                 
+                                    {% for absence in absences  %}
+                                            <h5 class="col-12 alert alert-info">{{absence.date}}</h5>
+                                    {% endfor %}
+                              
+                            
+                
+                            <!-- Les Projets auquels l'Etudiant à particié -->
+                        </div>  
+                    
+                    </div>
+                </main>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="{% static 'notes/js/scripts.js' %}"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+        <script src="{% static 'notes/assets/demo/chart-area-demo.js' %}"></script>
+        <script src="{% static 'notes/assets/demo/chart-bar-demo.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
+        <script src="{% static 'notes/js/datatables-simple-demo.js' %}"></script>
+        <script src="{% static 'Application/style/jquery-3.7.1.min.js' %}"></script>
+        <script>
+           
+            function highlightMatch(text, index, length) {
+                var highlightedText = text.substring(0, index) + '<span class="highlight">' + text.substring(index, index + length) + '</span>' + text.substring(index + length);
+                return highlightedText;
+            }
+            function present(element) {
+                document.getElementById(element).value = "present";
+                btn = document.getElementsByClassName(element);
+                btn[0].classList.add("btn-success");
+                btn[1].classList.remove("btn-danger");
+            }
+            function absent(element) {
+                document.getElementById(element).value = "absent";
+                btn = document.getElementsByClassName(element);
+                btn[0].classList.remove("btn-success");
+                btn[1].classList.add("btn-danger");
+            }
+        </script>
+        
+        {% include "_partials/footer_link.html" %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctxOverall = document.getElementById('overallChart').getContext('2d');
+                const ctxappreciation = document.getElementById('apreciation').getContext('2d');
+                
+                // Overall Presence Pie Chart
+                new Chart(ctxOverall, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Présence', 'Absence'],
+                        datasets: [{
+                            label: 'Taux de présence et d\'absence',
+                            data: [{{ taux_presence }}, {{ taux_absence }}],
+                            backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+                            borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)'],
+                            borderWidth: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': ' + tooltipItem.raw + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Appreciation graphique en courbe
+                new Chart(ctxappreciation, { 
+                    type: 'line',
+                    data: {
+                        labels: ['Note 1', "Notes 2", "Notes 3"],
+                        datasets: [
+                            {
+                                label: 'Evolution des notes de l\'Etudiant',
+                                data: {{ notes|safe }},
+                                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                fill: false,
+                                borderColor: 'rgb(75, 192, 192)',
+                                tension: 0.1
+                            },
+                           
+                        ]
+                    },
+                    options: {
+                        animations: {
+                            tension: {
+                              duration: 1000,
+                              easing: 'linear',
+                              from: 1,
+                              to: 0,
+                              loop: true
+                            }
+                          },
+                        
+                        responsive: true,
+                        scales: {
+                            y: {
+                                min: 0,
+                                max: 10
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.dataset.label + ': ' + tooltipItem.raw + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
